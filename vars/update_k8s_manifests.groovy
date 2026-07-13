@@ -19,34 +19,33 @@ def call(Map config = [:]) {
         passwordVariable: 'GIT_PASSWORD'
     )]) {
         // Configure Git
-        sh """
+        sh '''
             git config user.name "${gitUserName}"
             git config user.email "${gitUserEmail}"
-        """
+        '''
         
         // Update deployment manifests with new image tags - using proper Linux sed syntax
-        sh """
-            sed -i "s|image: shreerajp555/easyshop-app:.*|image: shreerajp555/easyshop-app:${imageTag}|g" ${manifestsPath}/08-easyshop-deployment.yaml
+        sh '''
+            sed -i "s|image: shreerajp555/easyshop-app:.*|image: shreerajp555/easyshop-app:'"${imageTag}"'|g" kubernetes/08-easyshop-deployment.yaml
 
-            if [ -f "${manifestsPath}/12-migration-job.yaml" ]; then
-                sed -i "s|image: shreerajp555/easyshop-migration:.*|image: shreerajp555/easyshop-migration:${imageTag}|g" ${manifestsPath}/12-migration-job.yaml
+            if [ -f "kubernetes/12-migration-job.yaml" ]; then
+                sed -i "s|image: shreerajp555/easyshop-migration:.*|image: shreerajp555/easyshop-migration:'"${imageTag}"'|g" kubernetes/12-migration-job.yaml
             fi
 
-            if [ -f "${manifestsPath}/10-ingress.yaml" ]; then
-                sed -i "s|host: .*|host: easyshop.letsdeployit.com|g" ${manifestsPath}/10-ingress.yaml
+            if [ -f "kubernetes/10-ingress.yaml" ]; then
+                sed -i "s|host: .*|host: easyshop.letsdeployit.com|g" kubernetes/10-ingress.yaml
             fi
 
-    # ✅ FIXED HERE (escaped $)
-            if [ -n "\$(git status --porcelain)" ]; then
-                git add ${manifestsPath}/*.yaml
-                git commit -m "Update image tag to ${imageTag} [ci skip]" || true
-                git remote set-url origin https://\$GIT_USERNAME:\$GIT_PASSWORD@github.com/shreerajp555/tws-e-commerce-app.git
-                git push origin HEAD:${gitBranch} || true
+            if [ -n "$(git status --porcelain)" ]; then
+                git add kubernetes/*.yaml
+                git commit -m "Update image tag to '"${imageTag}"' [ci skip]" || true
+                git remote set-url origin https://$GIT_USERNAME:$GIT_PASSWORD@github.com/shreerajp555/tws-e-commerce-app.git
+                git push origin HEAD:master || true
             else
                 echo "No changes to commit"
             fi
 
             exit 0
-        """
+        '''
     }
 }
