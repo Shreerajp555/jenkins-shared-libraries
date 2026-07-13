@@ -26,24 +26,21 @@ def call(Map config = [:]) {
         
         // Update deployment manifests with new image tags - using proper Linux sed syntax
         sh """
-            # Update main application deployment - note the correct image name is trainwithshubham/easyshop-app
             sed -i "s|image: shreerajp555/easyshop-app:.*|image: shreerajp555/easyshop-app:${imageTag}|g" ${manifestsPath}/08-easyshop-deployment.yaml
-            
-            # Update migration job if it exists
+
             if [ -f "${manifestsPath}/12-migration-job.yaml" ]; then
                 sed -i "s|image: shreerajp555/easyshop-migration:.*|image: shreerajp555/easyshop-migration:${imageTag}|g" ${manifestsPath}/12-migration-job.yaml
             fi
-            
-            # Ensure ingress is using the correct domain
+
             if [ -f "${manifestsPath}/10-ingress.yaml" ]; then
                 sed -i "s|host: .*|host: easyshop.letsdeployit.com|g" ${manifestsPath}/10-ingress.yaml
             fi
-            
-            # Check for changes
-            if [ -n "$(git status --porcelain)" ]; then
+
+    # ✅ FIXED HERE (escaped $)
+            if [ -n "\$(git status --porcelain)" ]; then
                 git add ${manifestsPath}/*.yaml
                 git commit -m "Update image tag to ${imageTag} [ci skip]" || true
-                git remote set-url origin https://$GIT_USERNAME:$GIT_PASSWORD@github.com/shreerajp555/tws-e-commerce-app.git
+                git remote set-url origin https://\$GIT_USERNAME:\$GIT_PASSWORD@github.com/shreerajp555/tws-e-commerce-app.git
                 git push origin HEAD:${gitBranch} || true
             else
                 echo "No changes to commit"
