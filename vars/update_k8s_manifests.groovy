@@ -9,6 +9,7 @@ def call(Map config = [:]) {
     def gitCredentials = config.gitCredentials ?: 'github-credentials'
     def gitUserName = config.gitUserName ?: 'Jenkins CI'
     def gitUserEmail = config.gitUserEmail ?: 'jenkins@example.com'
+    def gitBranch = config.gitBranch ?: 'main'
     
     echo "Updating Kubernetes manifests with image tag: ${imageTag}"
     
@@ -26,11 +27,11 @@ def call(Map config = [:]) {
         // Update deployment manifests with new image tags - using proper Linux sed syntax
         sh """
             # Update main application deployment - note the correct image name is trainwithshubham/easyshop-app
-            sed -i "s|image: trainwithshubham/easyshop-app:.*|image: trainwithshubham/easyshop-app:${imageTag}|g" ${manifestsPath}/08-easyshop-deployment.yaml
+            sed -i "s|image: shreerajp555/easyshop-app:.*|image: shreerajp555/easyshop-app:${imageTag}|g" ${manifestsPath}/08-easyshop-deployment.yaml
             
             # Update migration job if it exists
             if [ -f "${manifestsPath}/12-migration-job.yaml" ]; then
-                sed -i "s|image: trainwithshubham/easyshop-migration:.*|image: trainwithshubham/easyshop-migration:${imageTag}|g" ${manifestsPath}/12-migration-job.yaml
+                sed -i "s|image: shreerajp555/easyshop-migration:.*|image: shreerajp555/easyshop-migration:${imageTag}|g" ${manifestsPath}/12-migration-job.yaml
             fi
             
             # Ensure ingress is using the correct domain
@@ -47,8 +48,8 @@ def call(Map config = [:]) {
                 git commit -m "Update image tags to ${imageTag} and ensure correct domain [ci skip]"
                 
                 # Set up credentials for push
-                git remote set-url origin https://\${GIT_USERNAME}:\${GIT_PASSWORD}@github.com/LondheShubham153/tws-e-commerce-app.git
-                git push origin HEAD:\${GIT_BRANCH}
+                git remote set-url origin https://\${GIT_USERNAME}:\${GIT_PASSWORD}@github.com/shreerajp555/tws-e-commerce-app.git
+                git push origin HEAD:${gitBranch}
             fi
         """
     }
