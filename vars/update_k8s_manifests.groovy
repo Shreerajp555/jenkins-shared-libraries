@@ -40,17 +40,16 @@ def call(Map config = [:]) {
             fi
             
             # Check for changes
-            if git status --porcelain | grep .; then
-                echo "No changes to commit"
-            else
-                # Commit and push changes
+            if [ -n "$(git status --porcelain)" ]; then
                 git add ${manifestsPath}/*.yaml
-                git commit -m "Update image tags to ${imageTag} and ensure correct domain [ci skip]"
-                
-                # Set up credentials for push
-                git remote set-url origin https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/shreerajp555/tws-e-commerce-app.git
-                git push origin HEAD:${gitBranch}
+                git commit -m "Update image tag to ${imageTag} [ci skip]" || true
+                git remote set-url origin https://$GIT_USERNAME:$GIT_PASSWORD@github.com/shreerajp555/tws-e-commerce-app.git
+                git push origin HEAD:${gitBranch} || true
+            else
+                echo "No changes to commit"
             fi
+
+            exit 0
         """
     }
 }
