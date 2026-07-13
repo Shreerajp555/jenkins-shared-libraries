@@ -1,12 +1,10 @@
 def call() {
     echo "Running unit tests..."
-    sh '''
-        npm install
-        npm test
-    '''
-    // Add your unit test commands here
-    // For example:
-    // sh "npm test" or "mvn test" depending on your project
-    
+
+    sh """
+        docker run --rm -v \$(pwd):/app -w /app node:18 \
+        sh -c "npm install && npm test"
+    """
+
     echo "Unit tests completed successfully"
 }
